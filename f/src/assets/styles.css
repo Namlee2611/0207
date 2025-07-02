@@ -1,0 +1,31 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  text-size-adjust: 100%; /* Standard property for Chrome/Edge */
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  max-width: 500px;
+  margin: 50px auto;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  text-align: match-parent; /* Standard for Safari 15.4+ */
+  text-align: inherit; /* Follows match-parent */
+}
+
+.vh-100 {
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .flex-grow-1 {
+    margin-left: 0 !important;
+  }
+  .bg-dark {
+    position: relative !important;
+    width: 100% !important;
+  }
+}
