@@ -17,6 +17,7 @@ function UserPage() {
     username: 'Tên Người Dùng',
     role: 'User',
   });
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     const username = localStorage.getItem('username');
@@ -36,9 +37,29 @@ function UserPage() {
   useEffect(() => {
     if (view === 'schedule') {
       axios.get('http://localhost:5226/api/schedule/approved')
-        .then((res) => setSchedules(res.data));
+        .then((res) => {
+          const normalize = s => ({
+            id: s.id || s.Id,
+            leader: s.leader || s.Leader,
+            content: s.content || s.Content,
+            startTime: s.startTime || s.StartTime,
+            endTime: s.endTime || s.EndTime,
+            date: s.date || s.Date,
+            location: s.location || s.Location,
+            unit: s.unit || s.Unit,
+            note: s.note || s.Note,
+            isApproved: s.isApproved ?? s.IsApproved,
+            userId: s.userId ?? s.UserId,
+          });
+          setSchedules(res.data.map(normalize));
+        })
+        .catch((err) => {
+          if (err.response && err.response.status === 429) {
+            alert('Gửi quá số yêu cầu ');
+          }
+        });
     }
-  }, [view]);
+  }, [view, refreshTrigger]);
 
   const handleSearchClose = () => {
     setSearchModalOpen(false);
@@ -52,17 +73,14 @@ function UserPage() {
     setSearchResults([]);
   };
 
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-
   const handleScheduleBooked = () => {
-    // Trigger refresh cho UserScheduleTable
     setRefreshTrigger(prev => prev + 1);
   };
 
   return (
     <>
       <Navbar username={user.username} role={user.role} />
-      <div className="d-flex" style={{ paddingTop: '56px' }}>
+      <div className="d-flex align-items-stretch" style={{ paddingTop: '56px' }}>
         <Sidebar setView={setView} />
         <div className="flex-grow-1">
           {view === 'schedule' && <ScheduleTable schedules={schedules} />}

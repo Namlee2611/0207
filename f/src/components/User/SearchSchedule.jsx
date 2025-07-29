@@ -45,10 +45,7 @@ function SearchSchedule({ isOpen, onClose, onSearchResults }) {
       if (form.content) params.content = form.content;
       if (form.startTime) params.startTime = form.startTime;
       if (form.endTime) params.endTime = form.endTime;
-      if (form.date) {
-        const date = new Date(form.date);
-        params.date = date.toLocaleDateString('en-GB').split('/').join('/');
-      }
+      if (form.date) params.date = form.date;
       if (form.location) params.location = form.location;
       if (form.unit) params.unit = form.unit;
 
@@ -199,7 +196,6 @@ function SearchSchedule({ isOpen, onClose, onSearchResults }) {
   );
 }
 
-// Component riêng để hiển thị kết quả tìm kiếm
 export function SearchResults({ schedules, onReset }) {
   if (schedules.length === 0) return null;
 

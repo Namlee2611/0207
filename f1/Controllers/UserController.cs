@@ -52,10 +52,6 @@ public class UserController : ControllerBase
     {
         try
         {
-            if (string.IsNullOrEmpty(user.Username) || string.IsNullOrEmpty(user.Password))
-            {
-                return BadRequest("Username và Password là bắt buộc");
-            }
             _userService.Add(user);
             return Ok("Thêm người dùng thành công");
         }
@@ -65,7 +61,7 @@ public class UserController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest("Lỗi: " + ex.Message);
+            return BadRequest("Thêm người dùng thất bại: " + ex.Message);
         }
     }
 
@@ -75,10 +71,6 @@ public class UserController : ControllerBase
     {
         try
         {
-            if (string.IsNullOrEmpty(user.Username) || string.IsNullOrEmpty(user.Password))
-            {
-                return BadRequest("Username và Password là bắt buộc");
-            }
             _userService.Update(id, user);
             return Ok("Cập nhật người dùng thành công");
         }
@@ -88,7 +80,7 @@ public class UserController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest("Lỗi: " + ex.Message);
+            return BadRequest("Cập nhật người dùng thất bại: " + ex.Message);
         }
     }
 
@@ -101,9 +93,13 @@ public class UserController : ControllerBase
             _userService.Delete(id);
             return Ok("Xóa người dùng thành công");
         }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
         catch (Exception ex)
         {
-            return BadRequest("Lỗi: " + ex.Message);
+            return BadRequest("Xóa người dùng thất bại: " + ex.Message);
         }
     }
 }

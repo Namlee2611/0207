@@ -20,8 +20,20 @@ function ApprovedSchedules() {
 
     axios.get('http://localhost:5226/api/schedule/approved')
       .then((res) => {
-        const data = Array.isArray(res.data) ? res.data : [];
-        setSchedules(data);
+        const normalize = s => ({
+          id: s.id || s.Id,
+          leader: s.leader || s.Leader,
+          content: s.content || s.Content,
+          startTime: s.startTime || s.StartTime,
+          endTime: s.endTime || s.EndTime,
+          date: s.date || s.Date,
+          location: s.location || s.Location,
+          unit: s.unit || s.Unit,
+          note: s.note || s.Note,
+          isApproved: s.isApproved ?? s.IsApproved,
+          userId: s.userId ?? s.UserId,
+        });
+        setSchedules(Array.isArray(res.data) ? res.data.map(normalize) : []);
       })
       .catch((err) => {
         console.error('API error:', err.response?.data);

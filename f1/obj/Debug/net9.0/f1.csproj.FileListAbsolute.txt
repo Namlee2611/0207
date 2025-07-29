@@ -163,3 +163,4 @@ C:\Users\Windows\Desktop\New folder (4)\f1\obj\Debug\net9.0\f1.genruntimeconfig.
 C:\Users\Windows\Desktop\New folder (4)\f1\obj\Debug\net9.0\ref\f1.dll
 C:\Users\Windows\Desktop\New folder (4)\f1\bin\Debug\net9.0\Dapper.dll
 C:\Users\Windows\Desktop\New folder (4)\f1\bin\Debug\net9.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\Windows\Desktop\New folder (4)\f1\obj\Debug\net9.0\f1.sourcelink.json

@@ -7,7 +7,6 @@ const UnauthorizedPage = () => {
   return (
     <div className="container d-flex justify-content-center align-items-center vh-100">
       <div className="text-center">
-        <h1 className="text-danger mb-4">403 - Không có quyền truy cập</h1>
         <p className="mb-4">Bạn không có quyền truy cập vào trang này.</p>
         <button 
           className="btn btn-primary"

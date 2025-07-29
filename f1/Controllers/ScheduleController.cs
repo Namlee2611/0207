@@ -27,35 +27,90 @@ public class ScheduleController : ControllerBase
 
     [HttpGet("pending")]
     [Authorize(Roles = "Admin")]
-    public IActionResult GetPending() => Ok(_scheduleService.GetPending());
+    public IActionResult GetPending([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = _scheduleService.GetPending(page, pageSize);
+        return Ok(result);
+    }
 
     [HttpGet("user/{userId}")]
-    public IActionResult GetByUserId(int userId) => Ok(_scheduleService.GetByUserId(userId));
+    public IActionResult GetByUserId(int userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = _scheduleService.GetByUserId(userId, page, pageSize);
+        return Ok(result);
+    }
 
     [HttpPost]
-    public IActionResult Add([FromBody] ScheduleDto schedule) =>
-        _scheduleService.Add(schedule) ? Ok("Đặt lịch thành công") : BadRequest("Lịch trùng");
+    public IActionResult Add([FromBody] ScheduleDto schedule)
+    {
+        try
+        {
+            _scheduleService.Add(schedule);
+            return Ok("Đặt lịch thành công");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest("Đặt lịch thất bại: " + ex.Message);
+        }
+    }
 
     [HttpPut("{id}")]
     public IActionResult Update(int id, [FromBody] ScheduleDto schedule)
     {
-        var success = _scheduleService.Update(id, schedule);
-        return success ? Ok("Cập nhật thành công") : BadRequest("Không thể cập nhật lịch đã duyệt");
+        try
+        {
+            var success = _scheduleService.Update(id, schedule);
+            return Ok("Cập nhật thành công");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest("Cập nhật thất bại: " + ex.Message);
+        }
     }
 
     [HttpPut("{id}/approve")]
     [Authorize(Roles = "Admin")]
     public IActionResult Approve(int id)
     {
-        _scheduleService.Approve(id);
-        return Ok();
+        try
+        {
+            _scheduleService.Approve(id);
+            return Ok("Duyệt lịch thành công");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest("Duyệt lịch thất bại: " + ex.Message);
+        }
     }
 
     [HttpDelete("{id}")]
     public IActionResult Delete(int id)
     {
-        _scheduleService.Delete(id);
-        return Ok();
+        try
+        {
+            _scheduleService.Delete(id);
+            return Ok("Xóa lịch thành công");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest("Xóa lịch thất bại: " + ex.Message);
+        }
     }
 
     [HttpGet("week")]
@@ -82,16 +137,28 @@ public class ScheduleController : ControllerBase
         {
             return BadRequest("Cần cung cấp ít nhất một tham số tìm kiếm");
         }
-        var filter = new
+        
+        try
         {
-            Leader = leader,
-            Content = content,
-            StartTime = startTime,
-            EndTime = endTime,
-            Date = date,
-            Location = location,
-            Unit = unit
-        };
-        return Ok(_scheduleService.Search(filter));
+            var filter = new
+            {
+                Leader = leader,
+                Content = content,
+                StartTime = startTime,
+                EndTime = endTime,
+                Date = date,
+                Location = location,
+                Unit = unit
+            };
+            return Ok(_scheduleService.Search(filter));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest("Tìm kiếm thất bại: " + ex.Message);
+        }
     }
 }

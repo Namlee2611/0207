@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-// Cấu hình axios interceptor để tự động thêm token vào header
 axios.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -14,14 +13,12 @@ axios.interceptors.request.use(
   }
 );
 
-// Interceptor để xử lý lỗi 401 (Unauthorized)
 axios.interceptors.response.use(
   (response) => {
     return response;
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Token hết hạn hoặc không hợp lệ
       localStorage.removeItem('token');
       localStorage.removeItem('username');
       localStorage.removeItem('email');
@@ -59,5 +56,27 @@ export const logout = () => {
   localStorage.removeItem('userId');
   delete axios.defaults.headers.common['Authorization'];
 };
+
+export function getSessionId() {
+  if (!sessionStorage.getItem('sessionId')) {
+    sessionStorage.setItem('sessionId', crypto.randomUUID());
+  }
+  return sessionStorage.getItem('sessionId');
+}
+
+axios.interceptors.request.use((config) => {
+  const sessionId = getSessionId();
+  if (sessionId) {
+    config.headers['X-Session-Id'] = sessionId;
+  }
+  if (config.url && config.url.startsWith('http://localhost:5226')) {
+    console.log('[DEBUG] Request:', {
+      url: config.url,
+      sessionId,
+      token: config.headers['Authorization']
+    });
+  }
+  return config;
+});
 
 export default axios; 

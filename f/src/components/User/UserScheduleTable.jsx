@@ -7,25 +7,52 @@ function UserScheduleTable({ refreshTrigger }) {
   const [userSchedules, setUserSchedules] = useState([]);
   const [editingSchedule, setEditingSchedule] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 10;
   const userId = localStorage.getItem('userId');
 
   useEffect(() => {
-    loadUserSchedules();
+    loadUserSchedules(1, true);
   }, []);
 
   useEffect(() => {
     if (refreshTrigger > 0) {
-      loadUserSchedules();
+      loadUserSchedules(1, true);
     }
   }, [refreshTrigger]);
 
-  const loadUserSchedules = async () => {
+  const loadUserSchedules = async (pageToLoad, reset = false) => {
     try {
-      const response = await axios.get(`http://localhost:5226/api/schedule/user/${userId}`);
-      setUserSchedules(response.data);
+      const response = await axios.get(`http://localhost:5226/api/schedule/user/${userId}?page=${pageToLoad}&pageSize=${pageSize}`);
+      const normalize = s => ({
+        id: s.id || s.Id,
+        leader: s.leader || s.Leader,
+        content: s.content || s.Content,
+        startTime: s.startTime || s.StartTime,
+        endTime: s.endTime || s.EndTime,
+        date: s.date || s.Date,
+        location: s.location || s.Location,
+        unit: s.unit || s.Unit,
+        note: s.note || s.Note,
+        isApproved: s.isApproved ?? s.IsApproved,
+        userId: s.userId ?? s.UserId,
+      });
+      const data = Array.isArray(response.data.data) ? response.data.data.map(normalize) : [];
+      setUserSchedules(reset ? data : prev => [...prev, ...data]);
+      setTotalCount(response.data.totalCount || 0);
+      setPage(pageToLoad);
     } catch (error) {
-      console.error('Error loading user schedules:', error);
+      if (error.response && error.response.status === 429) {
+        alert('Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau!');
+      } else {
+        console.error('Error loading user schedules:', error)
+      }
     }
+  };
+
+  const handleLoadMore = () => {
+    loadUserSchedules(page + 1);
   };
 
   const handleEdit = (schedule) => {
@@ -46,7 +73,11 @@ function UserScheduleTable({ refreshTrigger }) {
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    // Nếu là yyyy-MM-dd (ISO), parse bình thường
+    // Nếu là dạng ISO (có T)
+    if (/^\d{4}-\d{2}-\d{2}T/.test(dateString)) {
+      const [year, month, day] = dateString.split('T')[0].split('-');
+      return `${day}/${month}/${year}`;
+    }
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return '';
@@ -55,7 +86,6 @@ function UserScheduleTable({ refreshTrigger }) {
       const year = date.getFullYear();
       return `${day}/${month}/${year}`;
     }
-    // Nếu là dd/MM/yyyy thì parse thủ công
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
       const [day, month, year] = dateString.split('/');
       return `${day}/${month}/${year}`;
@@ -100,8 +130,8 @@ function UserScheduleTable({ refreshTrigger }) {
             </tr>
           </thead>
           <tbody>
-            {userSchedules.map((schedule) => (
-              <tr key={schedule.id}>
+            {userSchedules.map((schedule, idx) => (
+              <tr key={schedule.id || idx}>
                 <td className="text-center align-middle">
                   <span className="fw-semibold text-dark">
                     {formatDate(schedule.date)}
@@ -171,6 +201,14 @@ function UserScheduleTable({ refreshTrigger }) {
           title="Chưa có lịch nào"
           message="Bạn chưa đặt lịch công tác nào"
         />
+      )}
+      {/* Nút tiếp */}
+      {(userSchedules.length < totalCount) && (
+        <div className="text-center my-3">
+          <button className="btn btn-primary" onClick={handleLoadMore}>
+            Tiếp
+          </button>
+        </div>
       )}
 
       <EditScheduleModal

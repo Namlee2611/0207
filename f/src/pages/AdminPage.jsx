@@ -35,7 +35,7 @@ function AdminPage() {
         onNavChange={setView}
         currentView={view}
       />
-      <div className="d-flex" style={{ paddingTop: '56px' }}>
+      <div className="d-flex align-items-stretch" style={{ paddingTop: '56px' }}>
         {view !== 'users' && <AdminSidebar setView={setView} />}
         <div className={`${view === 'users' ? 'w-100' : 'flex-grow-1'} p-4`}>
           {view === 'pending' && <PendingSchedules />}

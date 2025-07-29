@@ -45,6 +45,7 @@ function BookScheduleModal({ isOpen, onClose, onScheduleBooked }) {
       setError('Vui lòng điền đầy đủ các trường bắt buộc');
       return;
     }
+    
     try {
       const userId = localStorage.getItem('userId');
       await axios.post('http://localhost:5226/api/schedule', {
@@ -71,7 +72,6 @@ function BookScheduleModal({ isOpen, onClose, onScheduleBooked }) {
         note: ''
       });
       
-      // Gọi callback để refresh bảng lịch của tôi
       if (onScheduleBooked) {
         onScheduleBooked();
       }

@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using f1.Models;
+using System.Data;
 
 namespace f1.Services;
 
@@ -18,8 +19,8 @@ public class UserService
     public List<object> GetAll()
     {
         using var conn = new SqlConnection(_connectionString);
-        var sql = "SELECT Id, Username, Password, Role FROM Users";
-        return conn.Query<object>(sql).AsList();
+        var sql = "sp_GetAllUsers";
+        return conn.Query<object>(sql, commandType: CommandType.StoredProcedure).AsList();
     }
 
     public void Add(UserDto user)
@@ -34,20 +35,15 @@ public class UserService
         }
 
         using var conn = new SqlConnection(_connectionString);
-        var checkSql = "SELECT COUNT(*) FROM Users WHERE Username = @Username";
-        var count = conn.ExecuteScalar<int>(checkSql, new { Username = user.Username });
-        if (count > 0)
+        try
         {
-            throw new ArgumentException("Username đã tồn tại");
+            var sql = "AddUser";
+            conn.Execute(sql, new { user.Username, user.Password, user.Role }, commandType: CommandType.StoredProcedure);
         }
-
-        var sql = "INSERT INTO Users (Username, Password, Role) VALUES (@Username, @Password, @Role)";
-        conn.Execute(sql, new
+        catch (SqlException ex)
         {
-            Username = user.Username,
-            Password = user.Password,
-            Role = user.Role
-        });
+            throw new ArgumentException(ex.Message);
+        }
     }
 
     public void Update(int id, UserDto user)
@@ -62,20 +58,28 @@ public class UserService
         }
 
         using var conn = new SqlConnection(_connectionString);
-        var sql = "UPDATE Users SET Username = @Username, Password = @Password, Role = @Role WHERE Id = @Id";
-        conn.Execute(sql, new
+        try
         {
-            Id = id,
-            Username = user.Username,
-            Password = user.Password,
-            Role = user.Role
-        });
+            var sql = "sp_UpdateUser";
+            conn.Execute(sql, new { Id = id, user.Username, user.Password, user.Role }, commandType: CommandType.StoredProcedure);
+        }
+        catch (SqlException ex)
+        {
+            throw new ArgumentException(ex.Message);
+        }
     }
 
     public void Delete(int id)
     {
         using var conn = new SqlConnection(_connectionString);
-        var sql = "DELETE FROM Users WHERE Id = @Id";
-        conn.Execute(sql, new { Id = id });
+        try
+        {
+            var sql = "sp_DeleteUser";
+            conn.Execute(sql, new { Id = id }, commandType: CommandType.StoredProcedure);
+        }
+        catch (SqlException ex)
+        {
+            throw new ArgumentException(ex.Message);
+        }
     }
 }

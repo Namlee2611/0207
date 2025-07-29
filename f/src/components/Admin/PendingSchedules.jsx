@@ -6,18 +6,45 @@ function PendingSchedules() {
   const [schedules, setSchedules] = useState([]);
   const [error, setError] = useState('');
   const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 10;
 
   useEffect(() => {
-    axios.get('http://localhost:5226/api/schedule/pending')
+    loadSchedules(1, true);
+    // eslint-disable-next-line
+  }, []);
+
+  const loadSchedules = (pageToLoad, reset = false) => {
+    axios.get(`http://localhost:5226/api/schedule/pending?page=${pageToLoad}&pageSize=${pageSize}`)
       .then((res) => {
-        const data = Array.isArray(res.data) ? res.data : [];
-        setSchedules(data);
+        const normalize = s => ({
+          id: s.id || s.Id,
+          leader: s.leader || s.Leader,
+          content: s.content || s.Content,
+          startTime: s.startTime || s.StartTime,
+          endTime: s.endTime || s.EndTime,
+          date: s.date || s.Date,
+          location: s.location || s.Location,
+          unit: s.unit || s.Unit,
+          note: s.note || s.Note,
+          isApproved: s.isApproved ?? s.IsApproved,
+          userId: s.userId ?? s.UserId,
+        });
+        const data = Array.isArray(res.data.data) ? res.data.data.map(normalize) : [];
+        setSchedules(reset ? data : prev => [...prev, ...data]);
+        setTotalCount(res.data.totalCount || 0);
+        setPage(pageToLoad);
       })
       .catch((err) => {
         console.error('API error:', err.response?.data);
         setError('Lỗi khi tải danh sách lịch: ' + (err.response?.data || err.message));
       });
-  }, []);
+  };
+
+  const handleLoadMore = () => {
+    loadSchedules(page + 1);
+  };
 
   const handleApprove = async (id) => {
     try {
@@ -110,6 +137,14 @@ function PendingSchedules() {
           </div>
         </div>
       </div>
+      {/* Nút tiếp */}
+      {(schedules.length < totalCount) && (
+        <div className="text-center my-3">
+          <button className="btn btn-primary" onClick={handleLoadMore}>
+            Tiếp
+          </button>
+        </div>
+      )}
       <ScheduleDetailsModal
         isOpen={!!selectedSchedule}
         onClose={handleCloseModal}

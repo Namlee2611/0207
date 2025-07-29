@@ -28,14 +28,6 @@ function UserManagement() {
       return;
     }
     
-    if (form.role === 'Admin') {
-      const existingAdmin = users.find(u => u.Role === 'Admin');
-      if (existingAdmin) {
-        setError('Chỉ được phép có 1 tài khoản Admin duy nhất');
-        return;
-      }
-    }
-    
     try {
       await axios.post('http://localhost:5226/api/user', {
         Username: form.username,
@@ -49,7 +41,7 @@ function UserManagement() {
       setShowModal(false);
       setTimeout(() => setSuccess(''), 1500);
     } catch (error) {
-      setError('Thêm người dùng thất bại: ' + (error.response?.data?.title || error.message));
+      setError('Thêm người dùng thất bại: ' + (error.response?.data || error.message));
     }
   };
 
@@ -59,18 +51,11 @@ function UserManagement() {
       return;
     }
     
-    // Tìm user hiện tại để lấy role
-    const currentUser = users.find(u => u.Id === id);
-    if (!currentUser) {
-      setError('Không tìm thấy người dùng');
-      return;
-    }
-    
     try {
       await axios.put(`http://localhost:5226/api/user/${id}`, {
         Username: form.username,
         Password: form.password,
-        Role: currentUser.Role, // Giữ nguyên role hiện tại
+        Role: form.role,
       });
       setSuccess('Cập nhật người dùng thành công');
       fetchUsers(); 
@@ -80,25 +65,12 @@ function UserManagement() {
       setForm({ username: '', password: '', role: 'User' });
       setTimeout(() => setSuccess(''), 1500);
     } catch (error) {
-      setError('Sửa người dùng thất bại: ' + (error.response?.data?.title || error.message));
+      setError('Sửa người dùng thất bại: ' + (error.response?.data || error.message));
     }
   };
 
   const handleDelete = async (id) => {
-    // Tìm user để kiểm tra role
-    const userToDelete = users.find(u => u.Id === id);
-    if (!userToDelete) {
-      setError('Không tìm thấy người dùng');
-      return;
-    }
-    
-    // Không cho phép xóa admin
-    if (userToDelete.Role === 'Admin') {
-      setError('Không thể xóa tài khoản Admin');
-      return;
-    }
-    
-    if (window.confirm(`Bạn có chắc muốn xóa người dùng "${userToDelete.Username}"?`)) {
+    if (window.confirm('Bạn có chắc muốn xóa người dùng này?')) {
       try {
         await axios.delete(`http://localhost:5226/api/user/${id}`);
         setSuccess('Xóa người dùng thành công');
@@ -106,7 +78,7 @@ function UserManagement() {
         setError('');
         setTimeout(() => setSuccess(''), 1500);
       } catch (error) {
-        setError('Xóa người dùng thất bại: ' + (error.response?.data?.title || error.message));
+        setError('Xóa người dùng thất bại: ' + (error.response?.data || error.message));
       }
     }
   };
